@@ -1,7 +1,13 @@
-import "./App.css";
+import { MapView } from "./components/MapView";
+import { RouteForm } from "./components/RouteForm";
 
 function App() {
-  return <></>;
+  return (
+    <div>
+      <RouteForm />
+      <MapView />
+    </div>
+  );
 }
 
 export default App;
