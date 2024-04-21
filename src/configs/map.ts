@@ -8,4 +8,4 @@ export const INITIAL_MAP_CONFIG: MapState = {
   isLoading: false,
   map: undefined,
   markers: [],
-};
+} as const;

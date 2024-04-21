@@ -1,7 +1,8 @@
+import type { Map, Marker } from "mapbox-gl";
+
 export interface Props {
   children: JSX.Element | JSX.Element[];
 }
-
 export interface DirectionsResponse {
   routes: Route[];
   waypoints: Waypoint[];
@@ -27,4 +28,13 @@ export interface Waypoint {
   distance: number;
   name: string;
   location: number[];
+}
+
+export type Path = [number, number];
+
+export interface MapState {
+  isMapReady: boolean;
+  isLoading: boolean;
+  map?: Map;
+  markers: Marker[];
 }
