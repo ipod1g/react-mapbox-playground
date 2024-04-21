@@ -1,8 +1,16 @@
 import type { Map, Marker } from "mapbox-gl";
-
 export interface Props {
   children: JSX.Element | JSX.Element[];
 }
+
+export interface MapState {
+  isMapReady: boolean;
+  isLoading: boolean;
+  responseMessage: FetchPathResponse | null;
+  map?: Map;
+  markers: Marker[];
+}
+
 export interface DirectionsResponse {
   routes: Route[];
   waypoints: Waypoint[];
@@ -32,9 +40,21 @@ export interface Waypoint {
 
 export type Path = [number, number];
 
-export interface MapState {
-  isMapReady: boolean;
-  isLoading: boolean;
-  map?: Map;
-  markers: Marker[];
-}
+export type FetchPathResponse =
+  | {
+      status: "in progress";
+    }
+  | {
+      status: "success";
+      path: number[][];
+      total_distance: number;
+      total_time: number;
+    }
+  | {
+      status: "failure";
+      error: string;
+    }
+  | {
+      status: "500";
+      error: string;
+    };
