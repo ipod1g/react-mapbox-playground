@@ -151,7 +151,7 @@ const FormCollapseButton = ({
     >
       <ArrowRight
         className={cn(
-          "aspect-square max-w-6 text-gray-400 transition-transform duration-300 ease-in-out transform",
+          "aspect-square w-6 h-6 text-gray-400 transition-transform duration-300 ease-in-out transform",
           open ? "rotate-180" : "rotate-0"
         )}
       />
