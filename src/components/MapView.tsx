@@ -1,11 +1,11 @@
 import { Map, NavigationControl } from "mapbox-gl";
-import { useContext, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 import { INITIAL_USER_LOCATION } from "@/configs/map";
-import { MapContext } from "@/context/MapContext";
+import { useMapContext } from "@/context/MapContext";
 
 export const MapView = () => {
-  const { setMap } = useContext(MapContext);
+  const { setMap } = useMapContext();
 
   const mapDiv = useRef<HTMLDivElement>(null);
 

@@ -29,9 +29,7 @@ export const fetchPathWithToken = async (
   interval = 2000
 ): Promise<FetchPathResponse> => {
   try {
-    const res = await mockApi.get<FetchPathResponse>(`/mock/route/success`);
-    // const res = await mockApi.get<FetchPathResponse>(`/route/${token}`);
-    // const res = await mockApi.get<FetchPathResponse>(`/mock/route/inprogress`);
+    const res = await mockApi.get<FetchPathResponse>(`/route/${token}`);
     callback(res.data);
 
     if (res.data.status === "in progress" && retries > 0) {
