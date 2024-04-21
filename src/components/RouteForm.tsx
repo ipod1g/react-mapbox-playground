@@ -52,7 +52,7 @@ export const RouteForm = () => {
       onSubmit={handleSubmit}
     >
       <div className="px-[5%] py-14 w-full text-black relative">
-        <h1 className="text-3xl mb-8">Start your search</h1>
+        <h1 className="text-3xl mb-8 font-semibold">Start your search</h1>
         <div className="flex flex-col gap-2">
           <label htmlFor="pickup">
             <p className="">Starting point</p>
