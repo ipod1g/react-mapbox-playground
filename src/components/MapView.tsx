@@ -23,5 +23,5 @@ export const MapView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div className="w-full h-full fixed inset-0" ref={mapDiv} />;
+  return <div className="w-full h-[100svh] fixed inset-0" ref={mapDiv} />;
 };
