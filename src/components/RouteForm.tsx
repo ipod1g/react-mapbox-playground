@@ -1,11 +1,11 @@
-import { useContext, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import ArrowRight from "@/components/ArrowRight";
 import { Button } from "@/components/Button";
 import { Chip } from "@/components/Chip";
 import { Input } from "@/components/Input";
 import Spinner from "@/components/Spinner";
-import { MapContext } from "@/context/MapContext";
+import { useMapContext } from "@/context/MapContext";
 import { cn } from "@/utils";
 
 import type { FetchPathResponse } from "@/types";
@@ -17,7 +17,7 @@ export const RouteForm = () => {
     clearResponseMessage,
     getRouteBetweenPoints,
     resetMap,
-  } = useContext(MapContext);
+  } = useMapContext();
 
   const [open, setOpen] = useState(true);
   const pickupRef = useRef<HTMLInputElement>(null);
@@ -25,10 +25,9 @@ export const RouteForm = () => {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    getRouteBetweenPoints(
-      (e.target as HTMLFormElement)["pickup"].value,
-      (e.target as HTMLFormElement)["dropoff"].value
-    );
+    if (pickupRef.current && dropoffRef.current) {
+      getRouteBetweenPoints(pickupRef.current.value, dropoffRef.current.value);
+    }
   }
 
   function handleReset() {
@@ -79,7 +78,7 @@ export const RouteForm = () => {
           </label>
         </div>
         <div>
-          <div className="flex w-full gap-10 mt-10 mb-20">
+          <div className="flex w-full gap-6 mt-10 mb-20">
             <Button disabled={isLoading} type="submit">
               Get Route
             </Button>

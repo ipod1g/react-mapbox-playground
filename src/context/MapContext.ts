@@ -1,9 +1,9 @@
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 
 import type { MapState } from "@/types";
 import type { Map } from "mapbox-gl";
 
-interface MapContextProps extends MapState {
+export interface MapContextProps extends MapState {
   // Methods
   setMap: (map: Map) => void;
   resetMap: () => void;
@@ -12,3 +12,7 @@ interface MapContextProps extends MapState {
 }
 
 export const MapContext = createContext({} as MapContextProps);
+
+export function useMapContext() {
+  return useContext(MapContext);
+}
