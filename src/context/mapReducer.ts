@@ -1,11 +1,14 @@
-import type { MapState } from "@/types";
+import type { FetchPathResponse, MapState } from "@/types";
 import type { Map, Marker } from "mapbox-gl";
 
 type MapAction =
   | { type: "setMap"; payload: Map }
-  | { type: "setMarkers"; payload: Marker[] }
+  | { type: "addMarkers"; payload: Marker[] }
+  | { type: "resetMarkers" }
   | { type: "startLoading" }
-  | { type: "stopLoading" };
+  | { type: "stopLoading" }
+  | { type: "setResponseMessage"; payload: FetchPathResponse }
+  | { type: "clearResponseMessage" };
 
 export const mapReducer = (state: MapState, action: MapAction): MapState => {
   switch (action.type) {
@@ -16,12 +19,13 @@ export const mapReducer = (state: MapState, action: MapAction): MapState => {
         map: action.payload,
       };
 
-    case "setMarkers":
+    case "addMarkers":
       return {
         ...state,
         markers: action.payload,
       };
-
+    case "resetMarkers":
+      return { ...state, markers: [] };
     case "startLoading":
       return {
         ...state,
@@ -33,7 +37,16 @@ export const mapReducer = (state: MapState, action: MapAction): MapState => {
         ...state,
         isLoading: false,
       };
-
+    case "setResponseMessage":
+      return {
+        ...state,
+        responseMessage: action.payload,
+      };
+    case "clearResponseMessage":
+      return {
+        ...state,
+        responseMessage: null,
+      };
     default:
       return state;
   }

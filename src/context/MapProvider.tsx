@@ -7,8 +7,14 @@ import { INITIAL_MAP_CONFIG } from "@/configs/map";
 import { MapContext } from "./MapContext";
 import { mapReducer } from "./mapReducer";
 
-import type { Path, Props } from "@/types";
-import type { AnySourceData, Map } from "mapbox-gl";
+import type { FetchPathResponse, Path, Props } from "@/types";
+import type { AxiosError } from "axios";
+import type {
+  AnySourceData,
+  GeoJSONSource,
+  Map,
+  MapboxGeoJSONFeature,
+} from "mapbox-gl";
 
 export const MapProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(mapReducer, INITIAL_MAP_CONFIG);
@@ -17,24 +23,72 @@ export const MapProvider = ({ children }: Props) => {
   };
 
   const setMarkers = (paths: Path[]) => {
-    paths.forEach((waypoint: Path, idx: number) => {
-      const waypointLngLat = {
-        lng: waypoint[1],
-        lat: waypoint[0],
-      };
+    const map = state.map as Map;
 
-      new Marker({
+    // reset if any
+    state.markers.forEach((marker) => marker.remove());
+    dispatch({ type: "resetMarkers" });
+
+    const newMarkers = paths.map((waypoint, idx) => {
+      const marker = new Marker({
         color: "#ff671d",
       })
-        .setLngLat(waypointLngLat)
+        .setLngLat([waypoint[1], waypoint[0]])
         .setPopup(
-          new Popup({
-            offset: 25,
-            closeButton: false,
-          }).setHTML(`<span>${idx + 1}</span>`)
+          new Popup({ offset: 25, closeButton: false }).setHTML(
+            `<div>Point ${idx + 1}
+              <p>Longitude: ${waypoint[1]}</p>
+              <p>Latitude:  ${waypoint[0]}</p>
+            </div>`
+          )
         )
-        .addTo(state.map as Map);
+        .addTo(map);
+
+      return marker;
     });
+
+    dispatch({ type: "addMarkers", payload: newMarkers });
+    createMarkerSourceAndLayer(newMarkers);
+  };
+
+  const createMarkerSourceAndLayer = (markers: Marker[]) => {
+    const features = markers.map((marker, idx) => ({
+      type: "Feature",
+      properties: {
+        description: `Point ${idx + 1}`,
+        icon: "marker",
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [marker.getLngLat().lng, marker.getLngLat().lat],
+      },
+    }));
+
+    const geojson = {
+      type: "FeatureCollection",
+      features: features,
+    } as unknown as MapboxGeoJSONFeature;
+
+    const map = state.map as Map;
+
+    if (map.getSource("markers")) {
+      console.log("Updating marker source and layer");
+      (map.getSource("markers") as GeoJSONSource).setData(geojson);
+    } else {
+      console.log("Adding marker source and layer");
+      map.addSource("markers", { type: "geojson", data: geojson });
+      map.addLayer({
+        id: "markers",
+        type: "symbol",
+        source: "markers",
+        layout: {
+          "text-field": "{description}",
+          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+          "text-offset": [0, -3.6],
+          "text-anchor": "top",
+        },
+      });
+    }
   };
 
   const getDirectionsFromPaths = async (paths: Path[]) => {
@@ -49,6 +103,21 @@ export const MapProvider = ({ children }: Props) => {
     } catch (error) {
       console.error("Error getting directions from paths:", error);
     }
+  };
+
+  const resetMap = () => {
+    const map = state.map;
+
+    if (map?.getLayer("routeLayer")) {
+      map.removeLayer("routeLayer");
+      map.removeSource("routeLayer");
+    }
+    if (map?.getLayer("markers")) {
+      map.removeLayer("markers");
+      map.removeSource("markers");
+    }
+    state.markers.forEach((marker) => marker.remove());
+    dispatch({ type: "resetMarkers" });
   };
 
   const updateMapWithRoute = (routeData: AnySourceData, map: Map) => {
@@ -106,15 +175,44 @@ export const MapProvider = ({ children }: Props) => {
   };
 
   const getRouteBetweenPoints = async (origin: string, destination: string) => {
+    dispatch({ type: "startLoading" });
     try {
-      dispatch({ type: "startLoading" });
-      const pathResponse = await getPaths(origin, destination);
-      await getDirectionsFromPaths(pathResponse.path as Path[]);
-      dispatch({ type: "stopLoading" });
+      const updateUI = async (data: FetchPathResponse) => {
+        switch (data.status) {
+          case "in progress":
+            dispatch({ type: "setResponseMessage", payload: data });
+            break;
+          case "success":
+            await getDirectionsFromPaths(data.path as Path[]);
+            dispatch({ type: "setResponseMessage", payload: data });
+            break;
+          case "failure":
+            dispatch({ type: "setResponseMessage", payload: data });
+            return;
+          default:
+            break;
+        }
+      };
+
+      await getPaths(origin, destination, updateUI);
     } catch (error) {
       console.error("Error getting route between points:", error);
+      dispatch({
+        type: "setResponseMessage",
+        payload: {
+          status: "500",
+          error: (error as AxiosError).message,
+        },
+      });
+    } finally {
       dispatch({ type: "stopLoading" });
     }
+  };
+
+  const clearResponseMessage = () => {
+    dispatch({
+      type: "clearResponseMessage",
+    });
   };
 
   return (
@@ -122,6 +220,8 @@ export const MapProvider = ({ children }: Props) => {
       value={{
         ...state,
         setMap,
+        resetMap,
+        clearResponseMessage,
         getRouteBetweenPoints,
       }}
     >
