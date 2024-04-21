@@ -1,7 +1,7 @@
 import { screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { customRender, mockContextState } from "@/utils/test";
+import { customRender, mockContextState } from "@/test/test";
 
 import { RouteForm } from "./RouteForm";
 
